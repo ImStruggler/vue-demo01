@@ -1,0 +1,71 @@
+<template>
+	<div class="chooser-component">
+		<div class="chooser-list">
+			<li v-for="(item,index) in selections" 
+			@click="toggleSelection(index)" 
+			:title="item.label"
+			:class="{active: checkActive(index)}" >
+				{{item.label}}
+			</li>
+
+		</div>
+	</div>
+</template>
+
+<script>
+import _ from 'lodash'
+export default{
+	props:{
+		selections:{
+			type:Array,
+			default:[{
+				label:'text',
+				value:0
+			}]
+		}
+	},
+	data(){
+		return{
+			nowIndexes:[0]
+		}
+	},
+	methods:{
+		toggleSelection(index){
+			if(this.nowIndexes.indexOf(index) === -1){
+				this.nowIndexes.push(index)
+			}else{
+				this.nowIndexes = _.remove(this.nowIndexes,(idx)=>{
+					return idx !== index
+				})
+			}
+			let nowObjArray = _.map(this.nowIndexes,(idx)=>{
+				return this.selections[idx]
+			})
+			this.$emit('on-change',nowObjArray)
+		},
+		checkActive(index){
+			return this.nowIndexes.indexOf(index) !== -1
+		}
+	}
+}
+</script>
+
+
+<style scoped>
+.chooser-component{
+	display: inline-block;
+	position: relative;
+}
+.chooser-list li{
+	display: inline-block;
+	border: 1px solid #4fc08d;
+	height: 25px;
+	line-height: 25px;
+	padding: 0 8px;
+	margin-right:10px;
+}
+.active{
+	background: #4fc08d;
+	color: #fff;
+}
+</style>
