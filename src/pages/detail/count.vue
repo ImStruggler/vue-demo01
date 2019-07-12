@@ -10,7 +10,7 @@
                   产品类型：
               </div>
               <div class="sales-board-line-right">
-                  <v-chooser :selections="buyType"
+                  <v-chooser :selections="buyTypes" @on-change="onParamChange('buyType',$event)"
                   ></v-chooser>
               </div>
           </div>
@@ -19,7 +19,7 @@
                   适用地区：
               </div>
               <div class="sales-board-line-right">
-                  <v-selection :selections="districts"
+                  <v-selection :selections="districts" @on-change="onParamChange('district',$event)"
                   ></v-selection>
               </div>
           </div>
@@ -28,7 +28,7 @@
                   有效时间：
               </div>
               <div class="sales-board-line-right">
-                <v-chooser :selections="periodList" 
+                <v-chooser :selections="periodList" @on-change="onParamChange('period',$event)"
                 ></v-chooser>
               </div>
           </div>
@@ -43,7 +43,7 @@
           <div class="sales-board-line">
               <div class="sales-board-line-left">&nbsp;</div>
               <div class="sales-board-line-right">
-                  <div class="button">
+                  <div class="button" @click="ShowPayDialog">
                     立即购买
                   </div>
               </div>
@@ -241,10 +241,10 @@
                   </td>
               </tr>
           </tbody>
-      </table>
+       </table>
       </div>
 
-      <!-- <my-dialog :is-show="isShowPayDialog" 
+       <my-dialog :is-show="isShowPayDialog" 
     @on-close="hidePayDialog">
       <table class="buy-dialog-table">
         <tr>
@@ -256,7 +256,7 @@
         </tr>
         <tr>
           <td>{{ buyType.label }}</td>
-          <td>{{ districts.label }}</td>
+          <td>{{ district.label }}</td>
           <td>{{ period.label }}</td>
           
           <td>{{ price }}</td>
@@ -270,7 +270,7 @@
       </div>
     </my-dialog>
     <my-dialog :is-show="isShowErrDialog" @0n-close="hideErrDialog">支付失败！</my-dialog>
-    <check-order :is-show-check-dialog="isShowCheckOrder" :order-id="orderId" @on-close-check-dialog="hideCheckOrder"></check-order>-->
+    <check-order :is-show-check-dialog="isShowCheckOrder" :order-id="orderId" @on-close-check-dialog="hideCheckOrder"></check-order>
   </div> 
 </template>
 
@@ -301,7 +301,7 @@ export default{
 		return{
       
       buyType:{},
-      districts:{},
+      district:{},
       period:{},
       price:0,
 
@@ -350,74 +350,89 @@ export default{
 			{
 				label: '重庆',
 				value: 5
-			},
-			]
+			}
+			],
+      periodList: [
+      {
+        label: '半年',
+        value: 0
+      },
+      {
+        label: '一年',
+        value: 1
+      },
+      {
+        label: '三年',
+        value: 2
+      }
+      ]
 		}
-  }
-	// methods:{
- //    onParamChange(attr,val){
- //      this[attr] = val
- //      this.getPrice()
- //    },
- //    getPrice(){
+  },
+	methods:{
+    onParamChange(attr,val){
+      this[attr] = val
+      this.getPrice()
+    },
+    getPrice(){
       
- //      let reqParams = {
+      let reqParams = {
         
- //        buyType : this.buyType.value,
- //        districts : this.districts.value,
- //        period : this.period.value
+        buyType : this.buyType.value,
+        district : this.district.value,
+        period : this.period.value
         
- //      }
- //      this.$http.post('/api/getPrice',reqParams)
- //      .then((res) => {
- //        // let data = JSON.parse(res.data)
- //        this.price = res.data.amount
- //      })
- //    },
- //    ShowPayDialog(){
- //      this.isShowPayDialog = true
- //    },
- //    hidePayDialog(){
- //      this.isShowPayDialog = false
- //    },
- //    hideErrDialog(){
- //      this.isShowErrDialog = false
- //    },
- //    hideCheckOrder(){
- //      this.isShowCheckOrder = false
- //    },
- //    onChangeBanks(bankObj){
- //      this.bankId = bankObj.id
+      }
+      this.$http.post('/api/getPrice',reqParams)
+      .then((res) => {
+        
+        this.price = res.data.amount
+      })
+    },
+    ShowPayDialog(){
+      this.isShowPayDialog = true
+    },
+    hidePayDialog(){
+      this.isShowPayDialog = false
+    },
+    hideErrDialog(){
+      this.isShowErrDialog = false
+    },
+    hideCheckOrder(){
+      this.isShowCheckOrder = false
+    },
+    onChangeBanks(bankObj){
+      this.bankId = bankObj.id
       
- //    },
- //    confirmBuy(){
+    },
+    confirmBuy(){
       
- //      let reqParams = {
- //        buyType : this.buyType.value,
- //        districts : this.districts.value,
- //        period : this.period.value,
- //        bankId : this.bankId
+      let reqParams = {
+        buyType : this.buyType.value,
+        district : this.district.value,
+        period : this.period.value,
+        bankId : this.bankId
 
- //      }
- //      this.$http.post('/api/createOrder',reqParams)
- //      .then((res) => {
- //        // let data = JSON.parse(res.data)
- //        this.orderId = res.data.orderId
- //        this.isShowCheckOrder = true
- //        this.isShowPayDialog = false
- //      },(err) => {
- //        this.isShowPayDialog = false 
- //        this.isShowErrDialog = true
- //      })
- //    }
- //  },
- //  mounted(){
+      }
+      this.$http.post('/api/createOrder',reqParams)
+      .then((res) => {
+        
+        this.orderId = res.data.orderId
+        this.isShowCheckOrder = true
+        this.isShowPayDialog = false
+      },(err) => {
+        this.isShowPayDialog = false 
+        this.isShowErrDialog = true
+      })
+    }
+  },
+  mounted(){
     
- //    this.buyType = this.buyType[0]
- //    this.districts = this.districts[0]
- //    this.period = this.period[0]
- //    this.getPrice()
- //  }
+    this.buyType = this.buyTypes[0]
+    this.district = this.districts[0]
+    this.period = this.periodList[0]
+
+    this.getPrice()
+  }
 	
 }
 </script>

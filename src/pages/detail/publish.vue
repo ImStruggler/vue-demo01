@@ -10,7 +10,9 @@
                   购买数量：
               </div>
               <div class="sales-board-line-right">
-                  <v-counter :max="100" :min="20"></v-counter>
+                  <v-counter :max="100" :min="20"
+                  :selections="buyNum"
+          @on-change="onParamChange('buyNum',$event)"></v-counter>
               </div>
           </div>
           <div class="sales-board-line">
@@ -18,7 +20,7 @@
                   行业：
               </div>
               <div class="sales-board-line-right">
-                  <v-selection :selections="tradeList"></v-selection>
+                  <v-selection :selections="tradeList" @on-change="onParamChange('trade',$event)"></v-selection>
               </div>
           </div>
           <div class="sales-board-line">
@@ -26,7 +28,8 @@
                   产品版本：
               </div>
               <div class="sales-board-line-right">
-                  <v-multi-chooser :selections="versionList"></v-multi-chooser>
+                  <v-multi-chooser :selections="versionList"
+                  @on-change="onParamChange('versions',$event)"></v-multi-chooser>
               </div>
           </div>
           <div class="sales-board-line">
@@ -34,7 +37,8 @@
                   有效时间：
               </div>
               <div class="sales-board-line-right">
-                  半年
+                  <v-chooser :selections="periodList" 
+          @on-change="onParamChange('period',$event)"></v-chooser>
               </div>
           </div>
           <div class="sales-board-line">
@@ -42,13 +46,13 @@
                   总价：
               </div>
               <div class="sales-board-line-right">
-                  500 元
+                  {{price}}元
               </div>
           </div>
           <div class="sales-board-line">
               <div class="sales-board-line-left">&nbsp;</div>
               <div class="sales-board-line-right">
-                  <div class="button">
+                  <div class="button" @click="ShowPayDialog">
                     立即购买
                   </div>
               </div>
@@ -246,8 +250,38 @@
                   </td>
               </tr>
           </tbody>
-      </table>
+        </table>
       </div>
+
+      <my-dialog :is-show="isShowPayDialog" 
+    @on-close="hidePayDialog">
+      <table class="buy-dialog-table">
+        <tr>
+          <th>购买数量</th>
+          <th>行业</th>
+          <th>有效时间</th>
+          <th>产品版本</th>
+          <th>总价</th>
+        </tr>
+        <tr>
+          <td>{{ buyNum }}</td>
+          <td>{{ trade.label }}</td>
+          <td>{{ period.label }}</td>
+          <td>
+            <span v-for="item in versions">{{ item.label }}</span>
+          </td>
+          <td>{{ price }}</td>
+        </tr>
+      </table>
+      <h3 class="buy-diaolog-title">请选择银行</h3>
+      <bank-chooser @on-change="onChangeBanks"></bank-chooser>
+      <div class="button buy-dialog-btn"
+      @click="confirmBuy">
+        确认购买
+      </div>
+    </my-dialog>
+    <my-dialog :is-show="isShowErrDialog" @0n-close="hideErrDialog">支付失败！</my-dialog>
+    <check-order :is-show-check-dialog="isShowCheckOrder" :order-id="orderId" @on-close-check-dialog="hideCheckOrder"></check-order>
   </div>
 </template>
 
@@ -257,15 +291,36 @@ import VChooser from '../../components/base/chooser'
 import VMultiChooser from '../../components/base/multiplyChooser'
 import VCounter from '../../components/base/counter'
 
+import Dialog from '../../components/dialog'
+import BankChooser from '../../components/base/bankChooser'
+import CheckOrder from '../../components/checkOrder'
+
+import _ from 'lodash'
+
 export default{
 	components:{
 		VSelection,
 		VChooser,
 		VMultiChooser,
-		VCounter
+		VCounter,
+    MyDialog:Dialog,
+    BankChooser,
+    CheckOrder
 	},
 	data(){
 		return{
+      buyNum:0,
+      trade:{},
+      versions:[],
+      period:{},
+      price:0,
+
+      isShowPayDialog:false,
+      bankId:null,
+      isShowCheckOrder:false,
+      isShowErrDialog:false,
+      orderId:0,
+
 			tradeList: [
 			{
 				label: '出版业',
@@ -305,9 +360,92 @@ export default{
 				label: '专家版',
 				value: 3
 			}
-			]
+			],
+      periodList: [
+      {
+        label: '半年',
+        value: 0
+      },
+      {
+        label: '一年',
+        value: 1
+      },
+      {
+        label: '三年',
+        value: 2
+      }
+      ]
 		}
-	}
+	},
+  methods:{
+    onParamChange(attr,val){
+      this[attr] = val
+      this.getPrice()
+    },
+    getPrice(){
+      let buyVersionsArray = _.map(this.versions,(item) => {
+        return item.value
+      })
+      let reqParams = {
+        buyNum : this.buyNum,
+        trade : this.tradeList.value,
+        period : this.period.value,
+        versions : buyVersionsArray.join(',')
+      }
+      this.$http.post('/api/getPrice',reqParams)
+      .then((res) => {
+        // let data = JSON.parse(res.data)
+        this.price = res.data.amount
+      })
+    },
+    ShowPayDialog(){
+      this.isShowPayDialog = true
+    },
+    hidePayDialog(){
+      this.isShowPayDialog = false
+    },
+    hideErrDialog(){
+      this.isShowErrDialog = false
+    },
+    hideCheckOrder(){
+      this.isShowCheckOrder = false
+    },
+    onChangeBanks(bankObj){
+      this.bankId = bankObj.id
+      
+    },
+    confirmBuy(){
+      let buyVersionsArray = _.map(this.versions,(item) => {
+        return item.value
+      })
+      let reqParams = {
+        buyNumber : this.buyNum,
+        trade : this.tradeList.value,
+        period : this.period.value,
+        versions : buyVersionsArray.join(','),
+        bankId : this.bankId
+
+      }
+      this.$http.post('/api/createOrder',reqParams)
+      .then((res) => {
+        // let data = JSON.parse(res.data)
+        this.orderId = res.data.orderId
+        this.isShowCheckOrder = true
+        this.isShowPayDialog = false
+      },(err) => {
+        this.isShowPayDialog = false 
+        this.isShowErrDialog = true
+      })
+    }
+  },
+  mounted(){
+    this.buyNum = 20
+    this.trade = this.tradeList[0]
+    this.versions = [this.versionList[0]]
+    this.period = this.periodList[0]
+    
+    this.getPrice()
+  }
 }
 </script>
 

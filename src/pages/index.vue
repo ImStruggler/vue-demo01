@@ -69,27 +69,27 @@ export default {
 			slides: [
 			{
 				src: require('../assets/slideShow/01.jpg'),
-				title: 'xxx1',
+				title: '合作共赢',
 				href: 'detail/analysis'
 			},
 			{
 				src: require('../assets/slideShow/02.jpg'),
-				title: 'xxx2',
+				title: 'money',
 				href: 'detail/count'
 			},
 			{
 				src: require('../assets/slideShow/03.jpg'),
-				title: 'xxx3',
+				title: '无',
 				href: 'http://xxx.xxx.com'
 			},
 			{
 				src: require('../assets/slideShow/04.jpg'),
-				title: 'xxx4',
+				title: '商业直播平台',
 				href: 'detail/forecast'
 			},
 			{
 				src: require('../assets/slideShow/05.jpg'),
-				title: 'xxx5',
+				title: '阿里智能',
 				href: 'detail/forecast'
 			}
 			],		

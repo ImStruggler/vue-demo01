@@ -102,7 +102,7 @@ export default{
 				key: 'amount'
 			}
 			],
-			// tableData:[],
+			//tableData:[],
 			currentOrder:'desc'
 		}
 	},
@@ -125,6 +125,7 @@ export default{
 			this.$store.dispatch('fetchOrderList')
 			// this.productId = obj.value
 			// this.getTableData()
+			
 		},
 		changeStartDate(date){
 			this.$store.commit('updateParams',{
@@ -155,7 +156,7 @@ export default{
 		},
 		getTableData(){
 			let reqParam = {
-				query:this.query,
+				//query:this.query,
 				productId:this.productId,
 				startDate:this.startDate,
 				endDate:this.endDate

@@ -10,7 +10,7 @@
 					购买数量：
 				</div>
 				<div class="sales-board-line-right">
-					<v-counter :selections="versionList"
+					<v-counter :selections="buyNum"
 					@on-change="onParamChange('buyNum',$event)"></v-counter>
 				</div>
 			</div>

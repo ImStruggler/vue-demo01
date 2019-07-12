@@ -15,6 +15,7 @@ const actions = {
 	fetchOrderList ({commit,state}){
 		Vue.http.post('/api/getOrderList',state.params)
 		.then((res) => {
+			//console.log(res.data)
 			commit('updateOrderList',res.data.list)
 			
 		},(err) => {
@@ -30,6 +31,7 @@ const mutations = {
 	},
 	updateParams(state,{key,val}){
 		state.params[key] = val
+		//console.log(state.params)
 	}
 }
 
